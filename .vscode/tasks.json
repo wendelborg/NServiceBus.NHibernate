@@ -1,0 +1,30 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build",
+      "type": "shell",
+      "command": "dotnet build src --configuration Debug",
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "silent", "panel": "shared" },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Test: issue #959 regression (no SQL needed)",
+      "type": "shell",
+      "command": "dotnet test src/NServiceBus.NHibernate.Tests --configuration Debug --filter \"FullyQualifiedName~When_configuration_contains_non_saga_collection_mappings\" --logger \"console;verbosity=normal\"",
+      "group": { "kind": "test", "isDefault": true },
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Test: full suite (requires SQL Server)",
+      "type": "shell",
+      "command": "dotnet test src/NServiceBus.NHibernate.Tests --configuration Debug --logger \"console;verbosity=normal\"",
+      "group": "test",
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": [],
+      "detail": "SQL Server must be running. From your host: docker compose up -d sql-server db-init"
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+
+WORKDIR /repo
+
+# Copy solution-level files first for better layer caching
+COPY global.json nuget.config ./
+COPY src/Directory.Build.props src/Directory.Build.targets src/Custom.Build.props src/NServiceBus.snk src/NServiceBusTests.snk src/
+COPY src/msbuild/ src/msbuild/
+
+# Copy project files for restore
+COPY src/NServiceBus.NHibernate/NServiceBus.NHibernate.csproj src/NServiceBus.NHibernate/
+COPY src/NServiceBus.NHibernate.BugRepro/NServiceBus.NHibernate.BugRepro.csproj src/NServiceBus.NHibernate.BugRepro/
+
+RUN dotnet restore src/NServiceBus.NHibernate.BugRepro
+
+# Copy source code
+COPY src/NServiceBus.NHibernate/ src/NServiceBus.NHibernate/
+COPY src/NServiceBus.NHibernate.BugRepro/ src/NServiceBus.NHibernate.BugRepro/
+
+RUN dotnet publish src/NServiceBus.NHibernate.BugRepro --configuration Debug --no-restore -o /app
+
+# Runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+
+WORKDIR /app
+COPY --from=build /app .
+
+ENTRYPOINT ["dotnet", "NServiceBus.NHibernate.BugRepro.dll"]
