@@ -57,8 +57,15 @@ namespace NServiceBus.SagaPersisters.NHibernate.AutoPersistence
             configuration.BuildMappings();
             var mappings = configuration.CreateMappings();
 
+            var sagaMappedEntityTypes = new HashSet<Type>(modelMapper.entityTypes);
+
             foreach (var collection in mappings.IterateCollections)
             {
+                if (!sagaMappedEntityTypes.Contains(collection.Owner.MappedClass))
+                {
+                    continue;
+                }
+
                 var table = collection.CollectionTable;
 
                 foreach (var foreignKey in table.ForeignKeyIterator)
